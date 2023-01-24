@@ -5,9 +5,9 @@ import { checkIfUidCorrespondToEmail } from "./util.js";
 const require = createRequire(import.meta.url);
 
 const { Spanner } = require("@google-cloud/spanner");
-const projectId = "kubernetestest-373803";
-const instanceId = "spannertest";
-const databaseId = "testdb";
+const projectId = process.env.PROJECT_ID;
+const instanceId = process.env.INSTANCE_ID;
+const databaseId = process.env.DATABASE_ID;
 const spanner = new Spanner({
   projectId: projectId,
 });
