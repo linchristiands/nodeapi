@@ -12,4 +12,12 @@ admin.initializeApp({
   }),
 });
 
-export const adminAuth = admin.auth();
+async function main() {
+  try {
+    let userRecord = await admin.auth().getUserByEmail("test@test.com");
+    console.log("4bRXC1NyXgWxonbg6y6aPg7l1am1" == userRecord.uid);
+  } catch (error) {
+    return false;
+  }
+}
+main();
