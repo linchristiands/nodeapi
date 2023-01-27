@@ -3,11 +3,11 @@ import uuid4 from "uuid4";
 import { checkIfUidCorrespondToEmail } from "./util.js";
 
 const require = createRequire(import.meta.url);
-
+const { Logging } = require("@google-cloud/logging");
 const { Spanner } = require("@google-cloud/spanner");
 const projectId = process.env.PROJECT_ID;
 const instanceId = process.env.INSTANCE_ID;
-const databaseId = process.env.DATABASE_ID;
+const databaseId = process.env.DATABASE_ID;;
 const spanner = new Spanner({
   projectId: projectId,
 });
@@ -85,6 +85,42 @@ app.post("/getcontactsent", async (req, res) => {
   } finally {
     // Close the database when finished.
     await database.close();
+  }
+});
+
+app.post("/error", async (req, res) => {
+  let uid = req.body.uid;
+  let email = req.body.email;
+  let logname = req.body.logname;
+  let message = req.body.message;
+  if (
+    uid == "" ||
+    email == "" ||
+    logname == "" ||
+    logname == undefined ||
+    message == "" ||
+    message == undefined
+  )
+    throw new Error("Missing parameters");
+  let result = await checkIfUidCorrespondToEmail(uid, email);
+  if (!result) {
+    console.log("User not registered, can't use this API");
+    throw new Error("User not registered, can't use this API");
+  }
+  try {
+    const logging = new Logging({ projectId });
+    const log = logging.log(logname);
+    const metadata = {
+      resource: { type: "global" },
+      severity: "INFO",
+    };
+    // Prepares a log entry
+    const entry = log.entry(metadata, message);
+    // Writes the log entry
+    await log.write(entry);
+    res.sendStatus(200);
+  } catch (error) {
+    res.sendStatus(500);
   }
 });
 
